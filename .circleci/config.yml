@@ -34,3 +34,9 @@ jobs:
         key: v1-dependencies-{{ checksum "package.json" }}
 
     - run: yarn test
+
+    - store_test_results:
+        path: build/reports/junit
+
+    - store_artifacts:
+        path: build/reports/junit
