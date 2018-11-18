@@ -33,7 +33,7 @@ jobs:
         - node_modules
         key: v1-dependencies-{{ checksum "package.json" }}
 
-    - run: yarn test
+    - run: yarn test --code-coverage
 
     - store_test_results:
         path: build/reports/junit
