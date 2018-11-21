@@ -2,46 +2,67 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
-version: 2
+version: 2.1
+
+executors:
+  node_executor: # declares a reusable executor for build and test
+    docker:
+      - image: circleci/node:11.1.0-browsers
+    working_directory: ~/working_dir
+
 jobs:
   build:
-    docker:
-    # specify the version you desire here
-    - image: circleci/node:11.1.0-browsers
-
-    # Specify service dependencies here if necessary
-    # CircleCI maintains a library of pre-built images
-    # documented at https://circleci.com/docs/2.0/circleci-images/
-    # - image: circleci/postgres:9.4
-
-    working_directory: ~/repo
-
+    executor: node_executor
     steps:
-    - checkout
+      - checkout
 
-    # Download and cache dependencies
-    - restore_cache:
-        keys:
-        - v1-dependencies-{{ checksum "package.json" }}
-        # fallback to using the latest cache if no exact match is found
-        - v1-dependencies-
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
-    - run: yarn install
+      - run: yarn install
 
-    - save_cache:
-        paths:
-        - node_modules
-        key: v1-dependencies-{{ checksum "package.json" }}
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
 
-    - run: yarn test --code-coverage
+      # Persist the specified paths into the workspace for use in downstream job.
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory.
+          # This is a directory on the container which is taken to be the root directory of the workspace.
+          root: .
+          # Must be relative path from root
+          paths:
+            - .
 
-    - store_test_results:
-        path: build/reports/junit
+  test-with-coverage:
+    executor: node_executor
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/working_dir
 
-    - store_artifacts:
-        path: build/reports/junit
+      - run: yarn test --code-coverage
 
-    - run:
-        name: Upload to Codecov
-        command: bash <(curl -s https://codecov.io/bash)
-        
+      - store_test_results:
+          path: build/reports/junit
+
+      - store_artifacts:
+          path: build/reports/junit
+
+      - run:
+          name: Upload to Codecov
+          command: bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
+      - test-with-coverage:
+          requires:
+            - build
