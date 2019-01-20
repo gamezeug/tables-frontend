@@ -58,19 +58,6 @@ jobs:
           name: Upload to Codecov
           command: bash <(curl -s https://codecov.io/bash)
 
-  build-docker-image:
-    executor: node_executor
-    steps:
-
-    - attach_workspace:
-        at: ~/working_dir
-      
-    - setup_remote_docker:
-        docker_layer_caching: true
-  
-    - run: |
-        docker build -t artun/gamezeug-tables .
-
   deploy-to-docker-hub:
     executor: node_executor
     steps:
@@ -84,6 +71,7 @@ jobs:
   
     - run: |
         docker login -u $DOCKER_USER -p $DOCKER_PW
+        docker build -t artun/gamezeug-tables .
         docker push artun/gamezeug-tables
 
 workflows:
@@ -94,9 +82,6 @@ workflows:
       - test-with-coverage:
           requires:
             - build
-      - build-docker-image:
-          requires:
-            - test-with-coverage
       - deploy-to-docker-hub:
           requires:
-            - build-docker-image
+            - test-with-coverage
