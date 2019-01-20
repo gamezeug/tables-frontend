@@ -58,6 +58,34 @@ jobs:
           name: Upload to Codecov
           command: bash <(curl -s https://codecov.io/bash)
 
+  build-docker-image:
+    executor: gradle_executor
+    steps:
+
+    - attach_workspace:
+        at: ~/working_dir
+      
+    - setup_remote_docker:
+        docker_layer_caching: true
+  
+    - run: |
+        docker build -t artun/gamezeug-tables .
+
+  deploy-to-docker-hub:
+    executor: gradle_executor
+    steps:
+
+    - attach_workspace:
+        # Must be absolute path or relative path from working_directory
+        at: ~/working_dir
+      
+    - setup_remote_docker:
+        docker_layer_caching: true
+  
+    - run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PW
+        docker push artun/gamezeug-tables
+
 workflows:
   version: 2
   workflow:
@@ -66,3 +94,9 @@ workflows:
       - test-with-coverage:
           requires:
             - build
+      - build-docker-image:
+          requires:
+            - test-with-coverage
+      - deploy-to-docker-hub:
+          requires:
+            - build-docker-image
