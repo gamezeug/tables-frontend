@@ -59,7 +59,7 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash)
 
   build-docker-image:
-    executor: gradle_executor
+    executor: node_executor
     steps:
 
     - attach_workspace:
@@ -72,7 +72,7 @@ jobs:
         docker build -t artun/gamezeug-tables .
 
   deploy-to-docker-hub:
-    executor: gradle_executor
+    executor: node_executor
     steps:
 
     - attach_workspace:
