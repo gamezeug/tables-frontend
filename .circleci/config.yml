@@ -46,7 +46,7 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/working_dir
 
-      - run: yarn test --code-coverage
+      - run: yarn run test:unit --code-coverage
 
       - store_test_results:
           path: build/reports/junit
@@ -71,19 +71,8 @@ jobs:
   
     - run: |
         docker login -u $DOCKER_USER -p $DOCKER_PW
-        docker build -t artun/gamezeug-tables .
-        docker push artun/gamezeug-tables
-
-  deploy-to-droplets:
-    executor: node_executor
-    steps:
-    - add_ssh_keys
-    - run:
-        name: Keyscan to known hosts
-        command: ssh-keyscan -H $DROPLET_HOST >> ~/.ssh/known_hosts
-
-    - deploy:
-        command: ssh -v $DROPLET_USER@$DROPLET_HOST "cd ~/gamezeug-docker-compose; git pull --ff-only; ./deploy.sh"
+        docker build -t artun/gamezeug-portal .
+        docker push artun/gamezeug-portal
 
 workflows:
   version: 2
@@ -96,6 +85,3 @@ workflows:
       - deploy-to-docker-hub:
           requires:
             - test-with-coverage
-      - deploy-to-droplets:
-          requires: 
-            - deploy-to-docker-hub
