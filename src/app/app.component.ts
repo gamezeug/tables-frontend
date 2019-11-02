@@ -11,34 +11,36 @@ import * as jwt_decode from "jwt-decode";
   styleUrls: ['./app.component.less']
 })
 export class AppComponent {
-  title = 'gamezeug-tables';
+  table = 'none';
 
   constructor(private http: HttpClient, private oauthService: OAuthService) { 
     this.configure();
   }
 
-  public flow() {
+  public login() {
     this.oauthService.initImplicitFlow();
   }
 
-  public login() {
-    this.oauthService.tryLogin({
-      onTokenReceived: (receivedTokens) => {
-        console.log(receivedTokens);
-      }
-    });
-  }
-
-  public logoff() {
+  public logOut() {
     this.oauthService.logOut();
   }
 
-  public name() {
-    this.title = this.getName();
+  public getTables() {
+    this.http.get('/tables/tables').subscribe((data: string) => this.table = JSON.stringify(data));
   }
 
-  public test() {
-    this.getTest().subscribe((data: string) => this.title = data);
+  public createTable() {
+    this.http.post('/tables/tables', {
+      id: '1',
+      status: 'OPEN',
+      maxNumberOfPlayers: 2,
+      name: 'new table',
+      players: []
+    }).subscribe((data: string) => this.table = JSON.stringify(data));
+  }
+
+  public isLoggedIn() {
+    return this.oauthService.hasValidAccessToken();
   }
 
   public getName() {
@@ -47,13 +49,10 @@ export class AppComponent {
     return decodedAccessToken.user_name;
   }
 
-  getTest() {
-    return this.http.get('/tables/test');
-  }
-
   private configure() {
     this.oauthService.configure(authConfig);
     this.oauthService.tokenValidationHandler = new JwksValidationHandler();
+    this.oauthService.tryLogin();
   }
 
   private getDecodedAccessToken(token: string): any {

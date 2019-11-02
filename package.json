@@ -7,7 +7,8 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "generate-swagger-api": "swagger-angular-generator -s src/api/api-docs.json -d src/api --no-store"
   },
   "private": true,
   "dependencies": {
