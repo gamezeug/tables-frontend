@@ -3,7 +3,7 @@ import { JwksValidationHandler } from 'angular-oauth2-oidc';
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
 import { authConfig } from './auth.config';
-import * as jwt_decode from "jwt-decode";
+import { JwtHelperService } from "@auth0/angular-jwt";
 
 @Component({
   selector: 'app-root',
@@ -11,6 +11,7 @@ import * as jwt_decode from "jwt-decode";
   styleUrls: ['./app.component.less']
 })
 export class AppComponent {
+
   table = 'none';
 
   constructor(private http: HttpClient, private oauthService: OAuthService) { 
@@ -56,11 +57,8 @@ export class AppComponent {
   }
 
   private getDecodedAccessToken(token: string): any {
-    try{
-        return jwt_decode(token);
-    } catch(Error){
-        return null;
-    }
+    const helper = new JwtHelperService();
+    return helper.decodeToken(token);
   }
 
 }
