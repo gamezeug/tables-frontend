@@ -1,9 +1,10 @@
 import { OAuthService } from 'angular-oauth2-oidc';
 import { JwksValidationHandler } from 'angular-oauth2-oidc';
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http'
 import { authConfig } from './auth.config';
 import { JwtHelperService } from "@auth0/angular-jwt";
+import { TableRestControllerService } from './api/services'
+import { Table } from './api/models'
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,7 @@ export class AppComponent {
 
   table = 'none';
 
-  constructor(private http: HttpClient, private oauthService: OAuthService) { 
+  constructor(private tableRestControllerService: TableRestControllerService, private oauthService: OAuthService) { 
     this.configure();
   }
 
@@ -27,17 +28,20 @@ export class AppComponent {
   }
 
   public getTables() {
-    this.http.get('/tables/tables').subscribe((data: string) => this.table = JSON.stringify(data));
+    this.tableRestControllerService.getTablesUsingGET().subscribe((data: Array<Table>) => this.table = JSON.stringify(data));
   }
 
   public createTable() {
-    this.http.post('/tables/tables', {
-      id: '1',
-      status: 'OPEN',
-      maxNumberOfPlayers: 2,
-      name: 'new table',
-      players: []
-    }).subscribe((data: string) => this.table = JSON.stringify(data));
+    const params: TableRestControllerService.CreateTableUsingPOSTParams = {
+      table: {
+        id: '1',
+        status: 'OPEN',
+        maxNumberOfPlayers: 2,
+        name: 'new table',
+        players: []
+      }
+    };
+    this.tableRestControllerService.createTableUsingPOST(params).subscribe((data: Table) => this.table = JSON.stringify(data));
   }
 
   public isLoggedIn() {

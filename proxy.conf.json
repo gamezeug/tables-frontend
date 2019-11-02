@@ -1,16 +1,8 @@
 {
-    "/authServer/*": {
-        "target": "http://localhost:8080",
-        "changeOrigin": true,
-        "secure": false
-    },
-    "/tables/*": {
+    "*": {
         "target": "http://localhost:8081",
         "changeOrigin": true,
-        "secure": false,
-        "pathRewrite": {
-            "^/tables": ""
-        }
+        "secure": false
     }
 }
   
